@@ -53,28 +53,34 @@ Chúng ta sẽ sử dụng Hardhat, Hardhat local testnet và Openzepplin Plugin
 
 Bước 1: Cài đặt hardhat và khởi tạo project
 
-    mkir SOLIDITY_PROXY && cd SOLIDITY_PROXY
+```
+mkir SOLIDITY_PROXY && cd SOLIDITY_PROXY
 
-    yarn init -y
-    yarn add hardhat
+yarn init -y
+yarn add hardhat
 
-    yarn hardhat
-    // choose option: sample typescript
+yarn hardhat
+// choose option: sample typescript
+```
 
 Bước 2: Thêm plugin @openzeppelin/hardhat-upgrades
 
-    yarn add @openzeppelin/hardhat-upgrades
+```
+yarn add @openzeppelin/hardhat-upgrades
+```
 
 Edit hardhat.config.ts để sử dụng Upgraded plugins.
 
-    // hardhat.config.ts
-    import '@openzeppelin/hardhat-upgrades';
+```
+// hardhat.config.ts
+import '@openzeppelin/hardhat-upgrades';
+```
 
 Chúng ta sẽ sử dụng 3 hàm của hardhat
 
-    deployProxy()
-    upgradeProxy()
-    prepareUpgrade()
+- deployProxy()
+- upgradeProxy()
+- prepareUpgrade()
 
 **_Task1.2: Viết một upgradeable smart contract_**
 
@@ -150,7 +156,10 @@ describe("Box", function () {
 ```
 
 Run test:
+
+```
 yarn hardhat test test/1.Box.test.ts
+```
 
 Kết quả:
 
@@ -170,15 +179,15 @@ Kết quả:
 Khi viết một script để triển khai smart contract, ta có thể viết như sau:
 
 ```
-  const Greeter = await ethers.getContractFactory("Greeter");
-  const greeter = await Greeter.deploy("Hello, Hardhat!");
+const Greeter = await ethers.getContractFactory("Greeter");
+const greeter = await Greeter.deploy("Hello, Hardhat!");
 ```
 
 Để triển khai một upgradeable contract, cần gọi hàm deployProxy() để thay thế. Đọc thêm tại [Docs](https://docs.openzeppelin.com/upgrades-plugins/1.x/api-hardhat-upgrades#deploy-proxy)
 
 ```
-  const Box = await ethers.getContractFactory("Box")
-  const box = await upgrades.deployProxy(Box,[42], { initializer: 'store' })
+const Box = await ethers.getContractFactory("Box")
+const box = await upgrades.deployProxy(Box,[42], { initializer: 'store' })
 ```
 
 Tại dòng thứ 2, chúng ta sử dụng Openzepplin Upgrades Plugin để deploy contract Box với giá trị khởi tạo là 42 được gọi bỏi hàm store như một initializer.
@@ -186,25 +195,25 @@ Tại dòng thứ 2, chúng ta sử dụng Openzepplin Upgrades Plugin để dep
 Sửa file "scripts/1.deploy_box.ts"
 
 ```
-  // scripts/1.deploy_box.ts
-  import { ethers } from "hardhat"
-  import { upgrades } from "hardhat"
+// scripts/1.deploy_box.ts
+import { ethers } from "hardhat"
+import { upgrades } from "hardhat"
 
-  async function main() {
+async function main() {
 
-    const Box = await ethers.getContractFactory("Box")
-    console.log("Deploying Box...")
-    const box = await upgrades.deployProxy(Box,[42], { initializer: 'store' })
+  const Box = await ethers.getContractFactory("Box")
+  console.log("Deploying Box...")
+  const box = await upgrades.deployProxy(Box,[42], { initializer: 'store' })
 
-    console.log(box.address," box(proxy) address")
-    console.log(await upgrades.erc1967.getImplementationAddress(box.address)," getImplementationAddress")
-    console.log(await upgrades.erc1967.getAdminAddress(box.address)," getAdminAddress")
-  }
+  console.log(box.address," box(proxy) address")
+  console.log(await upgrades.erc1967.getImplementationAddress(box.address)," getImplementationAddress")
+  console.log(await upgrades.erc1967.getAdminAddress(box.address)," getAdminAddress")
+}
 
-  main().catch((error) => {
-    console.error(error)
-    process.exitCode = 1
-  })
+main().catch((error) => {
+  console.error(error)
+  process.exitCode = 1
+})
 ```
 
 Giải thích:
@@ -249,32 +258,32 @@ Các User tương tác với implementation contract thông qua proxy contract.
 Chỉnh sủa file "test/2.BoxProxy.test.ts"
 
 ```
-  // test/2.BoxProxy.test.ts
-  import { expect } from "chai"
-  import { ethers, upgrades } from "hardhat"
-  import { Contract, BigNumber } from "ethers"
+// test/2.BoxProxy.test.ts
+import { expect } from "chai"
+import { ethers, upgrades } from "hardhat"
+import { Contract, BigNumber } from "ethers"
 
-  describe("Box (proxy)", function () {
-    let box:Contract
+describe("Box (proxy)", function () {
+  let box:Contract
 
-    beforeEach(async function () {
-      const Box = await ethers.getContractFactory("Box")
-      //initialize with 42
-      box = await upgrades.deployProxy(Box, [42], {initializer: 'store'})
-      })
-
-    it("should retrieve value previously stored", async function () {
-      // console.log(box.address," box(proxy)")
-      // console.log(await upgrades.erc1967.getImplementationAddress(box.address)," getImplementationAddress")
-      // console.log(await upgrades.erc1967.getAdminAddress(box.address), " getAdminAddress")
-
-      expect(await box.retrieve()).to.equal(BigNumber.from('42'))
-
-      await box.store(100)
-      expect(await box.retrieve()).to.equal(BigNumber.from('100'))
+  beforeEach(async function () {
+    const Box = await ethers.getContractFactory("Box")
+    //initialize with 42
+    box = await upgrades.deployProxy(Box, [42], {initializer: 'store'})
     })
 
+  it("should retrieve value previously stored", async function () {
+    // console.log(box.address," box(proxy)")
+    // console.log(await upgrades.erc1967.getImplementationAddress(box.address)," getImplementationAddress")
+    // console.log(await upgrades.erc1967.getAdminAddress(box.address), " getAdminAddress")
+
+    expect(await box.retrieve()).to.equal(BigNumber.from('42'))
+
+    await box.store(100)
+    expect(await box.retrieve()).to.equal(BigNumber.from('100'))
   })
+
+})
 ```
 
 Run:
@@ -306,18 +315,18 @@ Chúng ta sẽ viết một version mới của Box contract tên là BoxV2.sol 
 Chỉnh sủa "contracts/BoxV2.sol"
 
 ```
-  // contracts/BoxV2.sol
-  // SPDX-License-Identifier: MIT
-  pragma solidity ^0.8.0;
+// contracts/BoxV2.sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-  import "./Box.sol";
+import "./Box.sol";
 
-  contract BoxV2 is Box{
-      // Increments the stored value by 1
-      function increment() public {
-          store(retrieve()+1);
-      }
-  }
+contract BoxV2 is Box{
+    // Increments the stored value by 1
+    function increment() public {
+        store(retrieve()+1);
+    }
+}
 ```
 
 **_Task3.2: Test script cho việc triển khai thông thường_**
@@ -327,35 +336,35 @@ Chúng ta viết một unit test để test BoxV2 sau khi deploy trên local.
 Chỉnh sửa "test/3.BoxV2.test.ts"
 
 ```
-  // test/3.BoxV2.test.ts
-  import { expect } from "chai"
-  import { ethers } from "hardhat"
-  import { Contract, BigNumber } from "ethers"
+// test/3.BoxV2.test.ts
+import { expect } from "chai"
+import { ethers } from "hardhat"
+import { Contract, BigNumber } from "ethers"
 
-  describe("Box V2", function () {
-    let boxV2:Contract
+describe("Box V2", function () {
+  let boxV2:Contract
 
-    beforeEach(async function () {
-      const BoxV2 = await ethers.getContractFactory("BoxV2")
-      boxV2 = await BoxV2.deploy()
-      await boxV2.deployed()
-    });
+  beforeEach(async function () {
+    const BoxV2 = await ethers.getContractFactory("BoxV2")
+    boxV2 = await BoxV2.deploy()
+    await boxV2.deployed()
+  });
 
-    it("should retrieve value previously stored", async function () {
-      await boxV2.store(42)
-      expect(await boxV2.retrieve()).to.equal(BigNumber.from('42'))
+  it("should retrieve value previously stored", async function () {
+    await boxV2.store(42)
+    expect(await boxV2.retrieve()).to.equal(BigNumber.from('42'))
 
-      await boxV2.store(100)
-      expect(await boxV2.retrieve()).to.equal(BigNumber.from('100'))
-    });
+    await boxV2.store(100)
+    expect(await boxV2.retrieve()).to.equal(BigNumber.from('100'))
+  });
 
-    it('should increment value correctly', async function () {
-      await boxV2.store(42)
-      await boxV2.increment()
-      expect(await boxV2.retrieve()).to.equal(BigNumber.from('43'))
-    })
-
+  it('should increment value correctly', async function () {
+    await boxV2.store(42)
+    await boxV2.increment()
+    expect(await boxV2.retrieve()).to.equal(BigNumber.from('43'))
   })
+
+})
 
 ```
 
@@ -388,43 +397,43 @@ Chúng ta sẽ viết unit test cho BoxV2 được deploy bởi Proxy.
 Chỉnh sửa "test/4.BoxProxyV2.test.ts":
 
 ```
-  // test/4.BoxProxyV2.test.ts
-  import { expect } from "chai"
-  import { ethers, upgrades } from "hardhat"
-  import { Contract, BigNumber } from "ethers"
+// test/4.BoxProxyV2.test.ts
+import { expect } from "chai"
+import { ethers, upgrades } from "hardhat"
+import { Contract, BigNumber } from "ethers"
 
-  describe("Box (proxy) V2", function () {
-    let box:Contract
-    let boxV2:Contract
+describe("Box (proxy) V2", function () {
+  let box:Contract
+  let boxV2:Contract
 
-    beforeEach(async function () {
-      const Box = await ethers.getContractFactory("Box")
-      const BoxV2 = await ethers.getContractFactory("BoxV2")
+  beforeEach(async function () {
+    const Box = await ethers.getContractFactory("Box")
+    const BoxV2 = await ethers.getContractFactory("BoxV2")
 
-      //initilize with 42
-      box = await upgrades.deployProxy(Box, [42], {initializer: 'store'})
-      // console.log(box.address," box/proxy")
-      // console.log(await upgrades.erc1967.getImplementationAddress(box.address)," getImplementationAddress")
-      // console.log(await upgrades.erc1967.getAdminAddress(box.address), " getAdminAddress")
+    //initilize with 42
+    box = await upgrades.deployProxy(Box, [42], {initializer: 'store'})
+    // console.log(box.address," box/proxy")
+    // console.log(await upgrades.erc1967.getImplementationAddress(box.address)," getImplementationAddress")
+    // console.log(await upgrades.erc1967.getAdminAddress(box.address), " getAdminAddress")
 
-      boxV2 = await upgrades.upgradeProxy(box.address, BoxV2)
-      // console.log(boxV2.address," box/proxy after upgrade")
-      // console.log(await upgrades.erc1967.getImplementationAddress(boxV2.address)," getImplementationAddress after upgrade")
-      // console.log(await upgrades.erc1967.getAdminAddress(boxV2.address)," getAdminAddress after upgrade")
-    })
-
-    it("should retrieve value previously stored and increment correctly", async function () {
-      expect(await boxV2.retrieve()).to.equal(BigNumber.from('42'))
-
-      await boxV2.increment()
-      //result = 42 + 1 = 43
-      expect(await boxV2.retrieve()).to.equal(BigNumber.from('43'))
-
-      await boxV2.store(100)
-      expect(await boxV2.retrieve()).to.equal(BigNumber.from('100'))
-    })
-
+    boxV2 = await upgrades.upgradeProxy(box.address, BoxV2)
+    // console.log(boxV2.address," box/proxy after upgrade")
+    // console.log(await upgrades.erc1967.getImplementationAddress(boxV2.address)," getImplementationAddress after upgrade")
+    // console.log(await upgrades.erc1967.getAdminAddress(boxV2.address)," getAdminAddress after upgrade")
   })
+
+  it("should retrieve value previously stored and increment correctly", async function () {
+    expect(await boxV2.retrieve()).to.equal(BigNumber.from('42'))
+
+    await boxV2.increment()
+    //result = 42 + 1 = 43
+    expect(await boxV2.retrieve()).to.equal(BigNumber.from('43'))
+
+    await boxV2.store(100)
+    expect(await boxV2.retrieve()).to.equal(BigNumber.from('100'))
+  })
+
+})
 ```
 
 Run test:
@@ -455,27 +464,27 @@ Trong sub-task này, chúng ta sẽ upgrade nó tới BoxV2 ( deploy contract m�
 Chỉnh sủa "scripts/2.upgradeV2.ts"
 
 ```
-  // scripts/2.upgradeV2.ts
-  import { ethers } from "hardhat";
-  import { upgrades } from "hardhat";
+// scripts/2.upgradeV2.ts
+import { ethers } from "hardhat";
+import { upgrades } from "hardhat";
 
-  const proxyAddress = '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0'
+const proxyAddress = '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0'
 
-  async function main() {
-    console.log(proxyAddress," original Box(proxy) address")
-    const BoxV2 = await ethers.getContractFactory("BoxV2")
-    console.log("upgrade to BoxV2...")
-    const boxV2 = await upgrades.upgradeProxy(proxyAddress, BoxV2)
-    console.log(boxV2.address," BoxV2 address(should be the same)")
+async function main() {
+  console.log(proxyAddress," original Box(proxy) address")
+  const BoxV2 = await ethers.getContractFactory("BoxV2")
+  console.log("upgrade to BoxV2...")
+  const boxV2 = await upgrades.upgradeProxy(proxyAddress, BoxV2)
+  console.log(boxV2.address," BoxV2 address(should be the same)")
 
-    console.log(await upgrades.erc1967.getImplementationAddress(boxV2.address)," getImplementationAddress")
-    console.log(await upgrades.erc1967.getAdminAddress(boxV2.address), " getAdminAddress")
-  }
+  console.log(await upgrades.erc1967.getImplementationAddress(boxV2.address)," getImplementationAddress")
+  console.log(await upgrades.erc1967.getAdminAddress(boxV2.address), " getAdminAddress")
+}
 
-  main().catch((error) => {
-    console.error(error)
-    process.exitCode = 1
-  })
+main().catch((error) => {
+  console.error(error)
+  process.exitCode = 1
+})
 ```
 
 **_Task3.5 Chạy upgrade script_**
@@ -526,38 +535,38 @@ Chạy hardhat console để kết nối với local testnet
 Trong hardhat console
 
 ```
-  address = '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0'
-  boxv2 = await ethers.getContractAt("BoxV2", address)
-  await boxv2.retrieve()
-  //BigNumber { value: "42" }
+address = '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0'
+boxv2 = await ethers.getContractAt("BoxV2", address)
+await boxv2.retrieve()
+//BigNumber { value: "42" }
 
-  await boxv2.increment()
-  // tx response
-  // {
-  // hash: '0x3e8c9dd8842d3315cadad2a80b592ac369e644edc5cec16f7a22c76d49e4b921',
-  // blockNumber: 6,
+await boxv2.increment()
+// tx response
+// {
+// hash: '0x3e8c9dd8842d3315cadad2a80b592ac369e644edc5cec16f7a22c76d49e4b921',
+// blockNumber: 6,
 
-  await boxv2.retrieve()
-  //BigNumber { value: "43" }
+await boxv2.retrieve()
+//BigNumber { value: "43" }
 
-  await boxv2.store(100)
-  // tx response ...
-  await boxv2.retrieve()
-  //BigNumber { value: "100" }
+await boxv2.store(100)
+// tx response ...
+await boxv2.retrieve()
+//BigNumber { value: "100" }
 ```
 
-**_Task4.2 Thử tương tác với implementation contracr_**
+**_Task4.2 Thử tương tác với implementation contract_**
 
 ```
-  addressimp = '0x5fc8d32690cc91d4c39d9d3abcbd16989f875707'
-  boximp = await ethers.getContractAt("BoxV2", addressimp)
+addressimp = '0x5fc8d32690cc91d4c39d9d3abcbd16989f875707'
+boximp = await ethers.getContractAt("BoxV2", addressimp)
 
-  await boximp.retrieve()
-  //BigNumber { value: "0" }
-  await boximp.increment()
-  // tx response ...
-  await boximp.retrieve()
-  BigNumber { value: "1" }
+await boximp.retrieve()
+//BigNumber { value: "0" }
+await boximp.increment()
+// tx response ...
+await boximp.retrieve()
+BigNumber { value: "1" }
 ```
 
 Chúng ta có thể thấy rằng, giá trị ban đầu trong implementation contract bằng 0. Đó là vì data được lưu trong context của Proxy contract.
@@ -575,21 +584,21 @@ Chúng ta sẽ thêm một biến trạng thái mới miến là không thay đ�
 Chúng ta sẽ viết BoxV3 kế thừa BoxV2
 
 ```
-  // contracts/BoxV3.sol
-  // SPDX-License-Identifier: MIT
-  pragma solidity ^0.8.0;
+// contracts/BoxV3.sol
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-  import "./BoxV2.sol";
+import "./BoxV2.sol";
 
-  contract BoxV3 is BoxV2{
-      string public name;
+contract BoxV3 is BoxV2{
+    string public name;
 
-      event NameChanged(string name);
-      function setName(string memory _name) public {
-          name = _name;
-          emit NameChanged(name);
-      }
-  }
+    event NameChanged(string name);
+    function setName(string memory _name) public {
+        name = _name;
+        emit NameChanged(name);
+    }
+}
 ```
 
 **_Task5.2: Viết test cho việc triển khai proxy_**
@@ -597,47 +606,47 @@ Chúng ta sẽ viết BoxV3 kế thừa BoxV2
 Chỉnh sửa "test/5.BoxProxyV3.test.ts"
 
 ```
-  // test/5.BoxProxyV3.test.ts
-  import { expect } from "chai"
-  import { ethers, upgrades } from "hardhat"
-  import { Contract, BigNumber } from "ethers"
+// test/5.BoxProxyV3.test.ts
+import { expect } from "chai"
+import { ethers, upgrades } from "hardhat"
+import { Contract, BigNumber } from "ethers"
 
-  describe("Box (proxy) V3 with name", function () {
-    let box:Contract
-    let boxV2:Contract
-    let boxV3:Contract
+describe("Box (proxy) V3 with name", function () {
+  let box:Contract
+  let boxV2:Contract
+  let boxV3:Contract
 
-    beforeEach(async function () {
-      const Box = await ethers.getContractFactory("Box")
-      const BoxV2 = await ethers.getContractFactory("BoxV2")
-      const BoxV3 =  await ethers.getContractFactory("BoxV3")
+  beforeEach(async function () {
+    const Box = await ethers.getContractFactory("Box")
+    const BoxV2 = await ethers.getContractFactory("BoxV2")
+    const BoxV3 =  await ethers.getContractFactory("BoxV3")
 
-      //initialize with 42
-      box = await upgrades.deployProxy(Box, [42], {initializer: 'store'})
-      boxV2 = await upgrades.upgradeProxy(box.address, BoxV2)
-      boxV3 = await upgrades.upgradeProxy(box.address, BoxV3)
-    })
-
-    it("should retrieve value previously stored and increment correctly", async function () {
-      expect(await boxV2.retrieve()).to.equal(BigNumber.from('42'))
-      await boxV3.increment()
-      expect(await boxV2.retrieve()).to.equal(BigNumber.from('43'))
-
-      await boxV2.store(100)
-      expect(await boxV2.retrieve()).to.equal(BigNumber.from('100'))
-    })
-
-    it("should set name correctly in V3", async function () {
-      expect(await boxV3.name()).to.equal("")
-
-      const boxname="my Box V3"
-      await boxV3.setName(boxname)
-      expect(await boxV3.name()).to.equal(boxname)
-    })
-
+    //initialize with 42
+    box = await upgrades.deployProxy(Box, [42], {initializer: 'store'})
+    boxV2 = await upgrades.upgradeProxy(box.address, BoxV2)
+    boxV3 = await upgrades.upgradeProxy(box.address, BoxV3)
   })
 
-  // NOTE: should also add test for event: event NameChanged(string name)
+  it("should retrieve value previously stored and increment correctly", async function () {
+    expect(await boxV2.retrieve()).to.equal(BigNumber.from('42'))
+    await boxV3.increment()
+    expect(await boxV2.retrieve()).to.equal(BigNumber.from('43'))
+
+    await boxV2.store(100)
+    expect(await boxV2.retrieve()).to.equal(BigNumber.from('100'))
+  })
+
+  it("should set name correctly in V3", async function () {
+    expect(await boxV3.name()).to.equal("")
+
+    const boxname="my Box V3"
+    await boxV3.setName(boxname)
+    expect(await boxV3.name()).to.equal(boxname)
+  })
+
+})
+
+// NOTE: should also add test for event: event NameChanged(string name)
 
 ```
 
@@ -662,22 +671,22 @@ Kết quả:
 Chỉnh sửa: "scripts/3.upgradeV3.ts"
 
 ```
-  // scripts/3.upgradeV3.ts
-  import { ethers } from "hardhat";
-  import { upgrades } from "hardhat";
+// scripts/3.upgradeV3.ts
+import { ethers } from "hardhat";
+import { upgrades } from "hardhat";
 
-  const proxyAddress = '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0'
-  // const proxyAddress = '0x1CD0c84b7C7C1350d203677Bb22037A92Cc7e268'
-  async function main() {
-    console.log(proxyAddress," original Box(proxy) address")
-    const BoxV3 = await ethers.getContractFactory("BoxV3")
-    console.log("upgrade to BoxV3...")
-    const boxV3 = await upgrades.upgradeProxy(proxyAddress, BoxV3)
-    console.log(boxV3.address," BoxV3 address(should be the same)")
+const proxyAddress = '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0'
+// const proxyAddress = '0x1CD0c84b7C7C1350d203677Bb22037A92Cc7e268'
+async function main() {
+  console.log(proxyAddress," original Box(proxy) address")
+  const BoxV3 = await ethers.getContractFactory("BoxV3")
+  console.log("upgrade to BoxV3...")
+  const boxV3 = await upgrades.upgradeProxy(proxyAddress, BoxV3)
+  console.log(boxV3.address," BoxV3 address(should be the same)")
 
-    console.log(await upgrades.erc1967.getImplementationAddress(boxV3.address)," getImplementationAddress")
-    console.log(await upgrades.erc1967.getAdminAddress(boxV3.address), " getAdminAddress")
-  }
+  console.log(await upgrades.erc1967.getImplementationAddress(boxV3.address)," getImplementationAddress")
+  console.log(await upgrades.erc1967.getAdminAddress(boxV3.address), " getAdminAddress")
+}
 
   main().catch((error) => {
     console.error(error)
@@ -711,15 +720,15 @@ STEP 2: Tương tác với BoxV3 trên hardhat console
 ```
 
 ```
-  address = '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0'
-  boxv3 = await ethers.getContractAt("BoxV3", address)
-  await boxv3.retrieve()
-  //BigNumber { value: "42" }
+address = '0x9fe46736679d2d9a65f0992f2272de9f3c7fa6e0'
+boxv3 = await ethers.getContractAt("BoxV3", address)
+await boxv3.retrieve()
+//BigNumber { value: "42" }
 
-  await boxv3.setName("mybox")
-  // tx response
-  await boxv3.name()
-  //'mybox'
+await boxv3.setName("mybox")
+// tx response
+await boxv3.name()
+//'mybox'
 ```
 
 # Task 6
